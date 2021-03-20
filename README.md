@@ -5,7 +5,7 @@ Neural Networks with No Imports (in Python)
 
 Things that need to be done:
 
- - [ ] activation function (Leaky ReLU)
+ - [x] activation function (Leaky ReLU)
  - [x] a class to represent a single layer
    - [x] a class to represent matrices
    - [ ] operations on matrices
@@ -13,6 +13,7 @@ Things that need to be done:
      - [x] random matrix generation
      - [x] matrix multiplication with scalars
      - [x] component-wise maximum
+     - [ ] matrix addition
      - [ ] other (?)
    - [ ] forward pass
  - [ ] loss function

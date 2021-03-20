@@ -44,6 +44,16 @@ class Matrix:
             data = [[data for _ in range(self.ncols)] for _ in range(self.nrows)]
         self.data = data
 
+    def __add__(self, other):
+        """Add two matrices or a matrix and a scalar."""
+
+        if isinstance(other, (int, float, complex)):
+            return self.map(lambda elem: elem + other)
+        elif isinstance(other, Matrix):
+            return Matrix.interleave(lambda l, r: l + r, self, other)
+        else:
+            raise ValueError(f"Cannot add a matrix with {type(other)}.")
+
     @ensure_other_is_scalar
     def __mul__(self, other):
         """Multiply a matrix with a scalar."""
@@ -82,16 +92,23 @@ class Matrix:
         return Matrix([[f(elem) for elem in row] for row in self.data])
 
     @staticmethod
+    def interleave(f, m1, m2):
+        """Apply f on the corresponding pairs of elements of the two matrices."""
+        data = []
+        for row1, row2 in zip(m1.data, m2.data):
+            data.append([f(e1, e2) for e1, e2 in zip(row1, row2)])
+        return Matrix(data)
+
+    @staticmethod
     def maximum(m1, m2):
         """Returns the component-wise maximum between two matrices."""
 
         if isinstance(m2, (int, float, complex)):
             return m1.map(lambda elem: max(elem, m2))
-
-        data = []
-        for row1, row2 in zip(m1.data, m2.data):
-            data.append([max(e1, e2) for e1, e2 in zip(row1, row2)])
-        return Matrix(data)
+        elif isinstance(m2, Matrix):
+            return Matrix.interleave(max, m1, m2)
+        else:
+            raise ValueError(f"Cannot find matrix maximum with argument of type {type(m2)}.")
 
     @staticmethod
     def dot(m1, m2):
@@ -146,11 +163,16 @@ class LeakyReLU(ActivationFunction):
 
 class Layer:
     """An abstraction over a set of weights and biases between two sets of neurons."""
-    def __init__(self, ins, outs):
+    def __init__(self, ins, outs, act_function):
         self.ins = ins
         self.outs = outs
+        self.act_function = act_function
         self.W = Matrix.random(outs, ins)
         self.b = Matrix.random(outs, 1)
+
+    def forward_pass(self, x):
+        """Propagate information forward."""
+        return self.act_function(Matrix.dot(self.W, x) + self.b)
 
 class NeuralNetwork:
     """An ordered collection of compatible layers."""
@@ -164,5 +186,7 @@ class NeuralNetwork:
 
 if __name__ == "__main__":
     m1 = Matrix.random(2, 2)
-    lrelu = LeakyReLU()
-    print(lrelu.loss(m1).data)
+    m2 = Matrix.random(2, 2)
+    print(m1.data)
+    print(m2.data)
+    print((m1 + m2).data)
