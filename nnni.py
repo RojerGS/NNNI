@@ -31,7 +31,7 @@ def ensure_other_is_scalar(matrix_method):
 class Matrix:
     """Represents a matrix with numerical components."""
 
-    rand_generator = random(73)
+    rand_generator = random(id(73))
 
     def __init__(self, data, nrows=None, ncols=None):
         """(nrows, ncols) gives the shape of the matrix and
@@ -47,6 +47,11 @@ class Matrix:
     def size(self):
         return self.nrows*self.ncols
 
+    def t(self):
+        return Matrix(
+            [[self.data[r][c] for r in range(self.nrows)] for c in range(self.ncols)]
+        )
+
     def __add__(self, other):
         """Add two matrices or a matrix and a scalar."""
 
@@ -61,14 +66,23 @@ class Matrix:
         """Subtract a matrix or a scalar from a matrix."""
         return self + (-1*other)
 
-    @ensure_other_is_scalar
     def __mul__(self, other):
         """Multiply a matrix with a scalar."""
-        return self.map(lambda elem: elem*other)
+
+        if isinstance(other, (int, float, complex)):
+            return self.map(lambda elem: elem * other)
+        elif isinstance(other, Matrix):
+            return Matrix.interleave(lambda l, r: l * r, self, other)
+        else:
+            raise ValueError(f"Cannot multiply a matrix with {type(other)}.")
 
     @ensure_other_is_scalar
     def __rmul__(self, other):
         return self*other
+
+    @ensure_other_is_scalar
+    def __truediv__(self, other):
+        return self*(1/other)
 
     @ensure_other_is_scalar
     def __pow__(self, other, modulo=None):
@@ -211,8 +225,10 @@ class Layer:
 
 class NeuralNetwork:
     """An ordered collection of compatible layers."""
-    def __init__(self, layers):
+    def __init__(self, layers, loss, lr):
         self.layers = layers
+        self.loss_function = loss
+        self.lr = lr
 
         # Check that the layers are compatible.
         for l1, l2 in zip(layers[:-1], layers[1:]):
@@ -227,14 +243,48 @@ class NeuralNetwork:
             out = layer.forward_pass(out)
         return out
 
+    def loss(self, out, t):
+        """Compute the loss of the network output."""
+        return self.loss_function.loss(out, t)
+
+    def train(self, x, t):
+        """Train the network so that net.forward_pass(x) becomes closer to t."""
+
+        xs = [x]
+        for layer in self.layers:
+            xs.append(layer.forward_pass(xs[-1]))
+
+        dx = self.loss_function.dloss(xs.pop(), t)
+        for layer, x in zip(self.layers[::-1], xs[::-1]):
+            y = Matrix.dot(layer.W, x) + layer.b
+            db = layer.act_function.df(y) * dx
+            dW = Matrix.dot(db, x.t())
+
+            layer.W = layer.W - self.lr * dW
+            layer.b = layer.b - self.lr * db
+
+            dx = Matrix.dot(layer.W.t(), db)
+
+
 if __name__ == "__main__":
     l1 = Layer(2, 3, LeakyReLU())
     l2 = Layer(3, 4, LeakyReLU())
     l3 = Layer(4, 1, LeakyReLU())
-    net = NeuralNetwork([l1, l2, l3])
+    net = NeuralNetwork([l1, l2, l3], MSELoss(), 0.01)
 
-    inp = Matrix.random(2, 1)
-    print(net.forward_pass(inp).data)
+    t = Matrix(0, 1, 1)
+    inps = [Matrix.random(2, 1) for _ in range(100)]
+    loss = 0
+    for inp in inps:
+        out = net.forward_pass(inp)
+        loss += net.loss(out, t)
+    print(f"Pre-training loss is {loss}")
 
-    print(l1.W.data)
-    print((l1.W**2).data)
+    for _ in range(1000):
+        net.train(Matrix.random(2, 1), t)
+
+    loss = 0
+    for inp in inps:
+        out = net.forward_pass(inp)
+        loss += net.loss(out, t)
+    print(f"Post-training loss is {loss}")
