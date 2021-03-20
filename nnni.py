@@ -67,7 +67,6 @@ class Matrix:
             [[next(Matrix.rand_generator) for _ in range(ncols)] for _ in range(nrows)]
         )
 
-
 class Layer:
     """An abstraction over a set of weights and biases between two sets of neurons."""
     def __init__(self, ins, outs):
@@ -75,6 +74,16 @@ class Layer:
         self.outs = outs
         self.W = Matrix.random(outs, ins)
         self.b = Matrix.random(outs, 1)
+
+class NeuralNetwork:
+    """An ordered collection of compatible layers."""
+    def __init__(self, layers):
+        self.layers = layers
+
+        # Check that the layers are compatible.
+        for l1, l2 in zip(layers[::-1], layers[1::]):
+            if l1.outs != l2.ins:
+                raise ValueError(f"Layers are not compatible ({l1.outs} != {l2.ins}).")
 
 if __name__ == "__main__":
     layer = Layer(16, 10)
