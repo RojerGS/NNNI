@@ -13,12 +13,12 @@ Things that need to be done:
      - [x] random matrix generation
      - [x] matrix multiplication with scalars
      - [x] component-wise maximum
-     - [ ] matrix addition
+     - [x] matrix addition
      - [ ] other (?)
-   - [ ] forward pass
+   - [x] forward pass
  - [ ] loss function
  - [ ] a class to represent a network
-   - [ ] forward pass
+   - [x] forward pass
    - [ ] backpropagation algorithm
  - [ ] read the MNIST data
  - [ ] train the network

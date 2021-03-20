@@ -184,6 +184,14 @@ class NeuralNetwork:
             if l1.outs != l2.ins:
                 raise ValueError(f"Layers are not compatible ({l1.outs} != {l2.ins}).")
 
+    def forward_pass(self, x):
+        """Propagate a vector through the whole network."""
+
+        out = x
+        for layer in self.layers:
+            out = layer.forward_pass(out)
+        return out
+
 if __name__ == "__main__":
     m1 = Matrix.random(2, 2)
     m2 = Matrix.random(2, 2)
