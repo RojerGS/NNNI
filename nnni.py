@@ -47,6 +47,14 @@ class Matrix:
         )
 
     @staticmethod
+    def maximum(m1, m2):
+        """Returns the component-wise maximum between two matrices."""
+        data = []
+        for row1, row2 in zip(m1.data, m2.data):
+            data.append([max(e1, e2) for e1, e2 in zip(row1, row2)])
+        return Matrix(data)
+
+    @staticmethod
     def dot(m1, m2):
         """Perform matrix multiplication."""
 
@@ -96,7 +104,8 @@ class NeuralNetwork:
                 raise ValueError(f"Layers are not compatible ({l1.outs} != {l2.ins}).")
 
 if __name__ == "__main__":
-    layer = Layer(16, 10)
-    print(layer.W.data)
-    print((layer.W*0).data)
-    print(layer.b.data)
+    m1 = Matrix.random(2, 2)
+    print(m1.data)
+    m2 = Matrix.random(2, 2)
+    print(m2.data)
+    print(Matrix.maximum(m1, m2).data)

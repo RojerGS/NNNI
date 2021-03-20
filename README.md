@@ -11,8 +11,8 @@ Things that need to be done:
    - [ ] operations on matrices
      - [x] matrix multiplication
      - [x] random matrix generation
-     - [ ] matrix multiplication with scalars
-     - [ ] component-wise maximum
+     - [x] matrix multiplication with scalars
+     - [x] component-wise maximum
      - [ ] other (?)
    - [ ] forward pass
  - [ ] loss function
