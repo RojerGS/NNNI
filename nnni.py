@@ -117,11 +117,12 @@ class Matrix:
     def random(nrows, ncols):
         """Generate a (nrows by ncols) random matrix.
 
-        The values are drawn from the uniform distribution in [0, 1].
+        The values are drawn from the uniform distribution in [-1, 1].
         """
 
         return Matrix(
-            [[next(Matrix.rand_generator) for _ in range(ncols)] for _ in range(nrows)]
+            [[2*next(Matrix.rand_generator) - 1 for _ in range(ncols)]
+            for _ in range(nrows)]
         )
 
 class ActivationFunction:
