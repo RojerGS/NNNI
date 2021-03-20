@@ -2,7 +2,29 @@
 Neural Networks with No Imports (in Python).
 """
 
+MERSENNE_PRIME = 162259276829213363391578010288127
+A = 2305843009213693951
+B = 15485863
+
+def random(seed):
+    """Pseudo-random number generator in the range [0, 1).
+
+    “Mersenne prime twister”."""
+
+    state = seed
+    for _ in range(20):
+        state = (state*A + B) % MERSENNE_PRIME
+    while True:
+        state = (state*A + B) % MERSENNE_PRIME
+        cand = state/(MERSENNE_PRIME + 1)
+        # Ignore the first 3 decimal places.
+        yield 1000*cand - int(1000*cand)
+
 class Matrix:
+    """Represents a matrix with numerical components."""
+
+    rand_generator = random(73)
+
     def __init__(self, data, nrows=None, ncols=None):
         """(nrows, ncols) gives the shape of the matrix and
         data populates the matrix."""
@@ -34,7 +56,27 @@ class Matrix:
             data.append(row)
         return Matrix(data)
 
+    @staticmethod
+    def random(nrows, ncols):
+        """Generate a (nrows by ncols) random matrix.
+
+        The values are drawn from the uniform distribution in [0, 1].
+        """
+
+        return Matrix(
+            [[next(Matrix.rand_generator) for _ in range(ncols)] for _ in range(nrows)]
+        )
+
+
+class Layer:
+    """An abstraction over a set of weights and biases between two sets of neurons."""
+    def __init__(self, ins, outs):
+        self.ins = ins
+        self.outs = outs
+        self.W = Matrix.random(outs, ins)
+        self.b = Matrix.random(outs, 1)
+
 if __name__ == "__main__":
-    id_ = Matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    m = Matrix(0.5, 3, 5)
-    print(Matrix.dot(id_, m).data)
+    layer = Layer(16, 10)
+    print(layer.W.data)
+    print(layer.b.data)
