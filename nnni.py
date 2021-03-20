@@ -84,6 +84,10 @@ class Matrix:
     @staticmethod
     def maximum(m1, m2):
         """Returns the component-wise maximum between two matrices."""
+
+        if isinstance(m2, (int, float, complex)):
+            return m1.map(lambda elem: max(elem, m2))
+
         data = []
         for row1, row2 in zip(m1.data, m2.data):
             data.append([max(e1, e2) for e1, e2 in zip(row1, row2)])
@@ -159,6 +163,5 @@ class NeuralNetwork:
 
 if __name__ == "__main__":
     m1 = Matrix.random(2, 2)
-    print(m1.data)
-    print((m1*2).data)
-    print((0*m1).data)
+    lrelu = LeakyReLU()
+    print(lrelu.loss(m1).data)
