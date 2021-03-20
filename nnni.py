@@ -20,6 +20,14 @@ def random(seed):
         # Ignore the first 3 decimal places.
         yield 1000*cand - int(1000*cand)
 
+def ensure_other_is_scalar(matrix_method):
+    """Simple decorator to check if second argument to a matrix method is a scalar."""
+    def wrapper(self, other):
+        if not isinstance(other, (int, float, complex)):
+            raise ValueError(f"Cannot use {matrix_method} with 'other' of type {type(other)}.") 
+        return matrix_method(self, other)
+    return wrapper
+
 class Matrix:
     """Represents a matrix with numerical components."""
 
@@ -36,15 +44,42 @@ class Matrix:
             data = [[data for _ in range(self.ncols)] for _ in range(self.nrows)]
         self.data = data
 
+    @ensure_other_is_scalar
     def __mul__(self, other):
         """Multiply a matrix with a scalar."""
+        return self.map(lambda elem: elem*other)
 
-        if not isinstance(other, (int, float, complex)):
-            raise ValueError(f"Cannot multiply matrix with value of type {type(other)}.")
+    @ensure_other_is_scalar
+    def __rmul__(self, other):
+        return self*other
 
-        return Matrix(
-            [[elem*other for elem in row] for row in self.data]
-        )
+    @ensure_other_is_scalar
+    def __lt__(self, other):
+        return self.map(lambda elem: int(elem < other))
+
+    @ensure_other_is_scalar
+    def __le__(self, other):
+        return self.map(lambda elem: int(elem <= other))
+
+    @ensure_other_is_scalar
+    def __eq__(self, other):
+        return self.map(lambda elem: int(elem == other))
+
+    @ensure_other_is_scalar
+    def __ne__(self, other):
+        return self.map(lambda elem: int(elem != other))
+
+    @ensure_other_is_scalar
+    def __gt__(self, other):
+        return self.map(lambda elem: int(elem > other))
+
+    @ensure_other_is_scalar
+    def __ge__(self, other):
+        return self.map(lambda elem: int(elem >= other))
+
+    def map(self, f):
+        """Map a function over all components of the matrix."""
+        return Matrix([[f(elem) for elem in row] for row in self.data])
 
     @staticmethod
     def maximum(m1, m2):
@@ -85,6 +120,25 @@ class Matrix:
             [[next(Matrix.rand_generator) for _ in range(ncols)] for _ in range(nrows)]
         )
 
+class ActivationFunction:
+    """'Abstract base class' for activation functions."""
+    def loss(self, x):
+        raise NotImplementedError("Activation functions should define the loss method.")
+
+    def dloss(self, x):
+        raise NotImplementedError("Activation functions should define the dloss method.")
+
+class LeakyReLU(ActivationFunction):
+    def __init__(self, alpha=0.1):
+        self.alpha = alpha
+
+    def loss(self, x):
+        return Matrix.maximum(x, self.alpha*x)
+
+    def dloss(self, x):
+        # return Matrix.maximum()
+        return Matrix.maximum(x > 0, self.alpha)
+
 class Layer:
     """An abstraction over a set of weights and biases between two sets of neurons."""
     def __init__(self, ins, outs):
@@ -106,6 +160,5 @@ class NeuralNetwork:
 if __name__ == "__main__":
     m1 = Matrix.random(2, 2)
     print(m1.data)
-    m2 = Matrix.random(2, 2)
-    print(m2.data)
-    print(Matrix.maximum(m1, m2).data)
+    print((m1*2).data)
+    print((0*m1).data)
