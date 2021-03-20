@@ -3,7 +3,7 @@
 ### Neural Networks with No Imports (in Python)
 
 As a proof of concept, this repository contains a *single*
-Python script with a full implementation of framework
+Python script with a full implementation of a framework
 for artificial neural networks while making use of **no**
 imports whatsoever.
 This means that the implementation is done purely in
