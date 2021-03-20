@@ -36,6 +36,16 @@ class Matrix:
             data = [[data for _ in range(self.ncols)] for _ in range(self.nrows)]
         self.data = data
 
+    def __mul__(self, other):
+        """Multiply a matrix with a scalar."""
+
+        if not isinstance(other, (int, float, complex)):
+            raise ValueError(f"Cannot multiply matrix with value of type {type(other)}.")
+
+        return Matrix(
+            [[elem*other for elem in row] for row in self.data]
+        )
+
     @staticmethod
     def dot(m1, m2):
         """Perform matrix multiplication."""
@@ -88,4 +98,5 @@ class NeuralNetwork:
 if __name__ == "__main__":
     layer = Layer(16, 10)
     print(layer.W.data)
+    print((layer.W*0).data)
     print(layer.b.data)
