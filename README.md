@@ -14,9 +14,11 @@ Things that need to be done:
      - [x] matrix multiplication with scalars
      - [x] component-wise maximum
      - [x] matrix addition
+     - [x] matrix subtraction
+     - [x] component-wise exponentiation
      - [ ] other (?)
    - [x] forward pass
- - [ ] loss function
+ - [x] loss function (MSE loss)
  - [ ] a class to represent a network
    - [x] forward pass
    - [ ] backpropagation algorithm

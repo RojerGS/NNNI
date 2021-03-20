@@ -22,10 +22,10 @@ def random(seed):
 
 def ensure_other_is_scalar(matrix_method):
     """Simple decorator to check if second argument to a matrix method is a scalar."""
-    def wrapper(self, other):
+    def wrapper(self, other, *args, **kwargs):
         if not isinstance(other, (int, float, complex)):
             raise ValueError(f"Cannot use {matrix_method} with 'other' of type {type(other)}.") 
-        return matrix_method(self, other)
+        return matrix_method(self, other, *args, **kwargs)
     return wrapper
 
 class Matrix:
@@ -44,6 +44,9 @@ class Matrix:
             data = [[data for _ in range(self.ncols)] for _ in range(self.nrows)]
         self.data = data
 
+    def size(self):
+        return self.nrows*self.ncols
+
     def __add__(self, other):
         """Add two matrices or a matrix and a scalar."""
 
@@ -54,6 +57,10 @@ class Matrix:
         else:
             raise ValueError(f"Cannot add a matrix with {type(other)}.")
 
+    def __sub__(self, other):
+        """Subtract a matrix or a scalar from a matrix."""
+        return self + (-1*other)
+
     @ensure_other_is_scalar
     def __mul__(self, other):
         """Multiply a matrix with a scalar."""
@@ -62,6 +69,13 @@ class Matrix:
     @ensure_other_is_scalar
     def __rmul__(self, other):
         return self*other
+
+    @ensure_other_is_scalar
+    def __pow__(self, other, modulo=None):
+        if modulo is None:
+            return self.map(lambda elem: pow(elem, other))
+        else:
+            return self.map(lambda elem: pow(elem, other, modulo))
 
     @ensure_other_is_scalar
     def __lt__(self, other):
@@ -131,6 +145,10 @@ class Matrix:
         return Matrix(data)
 
     @staticmethod
+    def mean(m):
+        return sum(sum(row) for row in m.data)/(m.size())
+
+    @staticmethod
     def random(nrows, ncols):
         """Generate a (nrows by ncols) random matrix.
 
@@ -145,10 +163,10 @@ class Matrix:
 class ActivationFunction:
     """'Abstract base class' for activation functions."""
     def f(self, x):
-        raise NotImplementedError("Activation functions should define the loss method.")
+        raise NotImplementedError("Activation functions should define the f method.")
 
     def df(self, x):
-        raise NotImplementedError("Activation functions should define the dloss method.")
+        raise NotImplementedError("Activation functions should define the df method.")
 
 class LeakyReLU(ActivationFunction):
     def __init__(self, alpha=0.1):
@@ -160,6 +178,23 @@ class LeakyReLU(ActivationFunction):
     def df(self, x):
         # return Matrix.maximum()
         return Matrix.maximum(x > 0, self.alpha)
+
+class LossFunction:
+    """'Abstract base class' for loss functions."""
+    def loss(self, output, target):
+        raise NotImplementedError("Loss functions should implement a loss method.")
+
+    def dloss(self, output, target):
+        """Derivative of the loss w.r.t. to the output variable."""
+        raise NotImplementedError("Loss functions should implement a dloss method.")
+
+class MSELoss(LossFunction):
+    """Mean Squared Error loss function."""
+    def loss(self, output, target):
+        return Matrix.mean((output - target)**2)
+
+    def dloss(self, output, target):
+        return 2*(output - target)/(output.size())
 
 class Layer:
     """An abstraction over a set of weights and biases between two sets of neurons."""
@@ -200,3 +235,6 @@ if __name__ == "__main__":
 
     inp = Matrix.random(2, 1)
     print(net.forward_pass(inp).data)
+
+    print(l1.W.data)
+    print((l1.W**2).data)
