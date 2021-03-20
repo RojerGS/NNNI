@@ -144,20 +144,20 @@ class Matrix:
 
 class ActivationFunction:
     """'Abstract base class' for activation functions."""
-    def loss(self, x):
+    def f(self, x):
         raise NotImplementedError("Activation functions should define the loss method.")
 
-    def dloss(self, x):
+    def df(self, x):
         raise NotImplementedError("Activation functions should define the dloss method.")
 
 class LeakyReLU(ActivationFunction):
     def __init__(self, alpha=0.1):
         self.alpha = alpha
 
-    def loss(self, x):
+    def f(self, x):
         return Matrix.maximum(x, self.alpha*x)
 
-    def dloss(self, x):
+    def df(self, x):
         # return Matrix.maximum()
         return Matrix.maximum(x > 0, self.alpha)
 
@@ -172,7 +172,7 @@ class Layer:
 
     def forward_pass(self, x):
         """Propagate information forward."""
-        return self.act_function(Matrix.dot(self.W, x) + self.b)
+        return self.act_function.f(Matrix.dot(self.W, x) + self.b)
 
 class NeuralNetwork:
     """An ordered collection of compatible layers."""
@@ -180,7 +180,7 @@ class NeuralNetwork:
         self.layers = layers
 
         # Check that the layers are compatible.
-        for l1, l2 in zip(layers[::-1], layers[1::]):
+        for l1, l2 in zip(layers[:-1], layers[1:]):
             if l1.outs != l2.ins:
                 raise ValueError(f"Layers are not compatible ({l1.outs} != {l2.ins}).")
 
@@ -193,8 +193,10 @@ class NeuralNetwork:
         return out
 
 if __name__ == "__main__":
-    m1 = Matrix.random(2, 2)
-    m2 = Matrix.random(2, 2)
-    print(m1.data)
-    print(m2.data)
-    print((m1 + m2).data)
+    l1 = Layer(2, 3, LeakyReLU())
+    l2 = Layer(3, 4, LeakyReLU())
+    l3 = Layer(4, 1, LeakyReLU())
+    net = NeuralNetwork([l1, l2, l3])
+
+    inp = Matrix.random(2, 1)
+    print(net.forward_pass(inp).data)
