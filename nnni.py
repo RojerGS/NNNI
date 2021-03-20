@@ -138,6 +138,17 @@ class Matrix:
         else:
             raise ValueError(f"Cannot find matrix maximum with argument of type {type(m2)}.")
 
+    def argmax(self):
+        """Returns the index of the largest value in the matrix."""
+        idx = (0, 0)
+        m = self.data[0][0]
+        for r, row in enumerate(self.data):
+            for c, elem in enumerate(row):
+                if elem > m:
+                    m = elem
+                    idx = (r, c)
+        return idx
+
     @staticmethod
     def dot(m1, m2):
         """Perform matrix multiplication."""
@@ -216,8 +227,8 @@ class Layer:
         self.ins = ins
         self.outs = outs
         self.act_function = act_function
-        self.W = Matrix.random(outs, ins)
-        self.b = Matrix.random(outs, 1)
+        self.W = Matrix.random(outs, ins)/(outs * ins)
+        self.b = Matrix.random(outs, 1)/outs
 
     def forward_pass(self, x):
         """Propagate information forward."""
@@ -266,6 +277,7 @@ class NeuralNetwork:
             dx = Matrix.dot(layer.W.t(), db)
 
 
+""" # Basic demo that shows empirically that the networks are working.
 if __name__ == "__main__":
     l1 = Layer(2, 3, LeakyReLU())
     l2 = Layer(3, 4, LeakyReLU())
@@ -288,3 +300,61 @@ if __name__ == "__main__":
         out = net.forward_pass(inp)
         loss += net.loss(out, t)
     print(f"Post-training loss is {loss}")
+"""
+
+if __name__ == "__main__":
+    layers = [
+        Layer(784, 16, LeakyReLU()),
+        Layer(16, 16, LeakyReLU()),
+        Layer(16, 10, LeakyReLU()),
+    ]
+    net = NeuralNetwork(layers, MSELoss(), 0.001)
+
+    def load_data(path):
+        """Load MNIST data from a CSV file."""
+
+        print(f"Now loading {path}...", end="")
+        with open(path, "r") as f:
+            lines = f.read().split("\n")[:-1]
+        # Convert each number to an integer.
+        data = [list(map(int, line.split(","))) for line in lines]
+        print(" Done loading.")
+        # Reformat the data into the (digit, pixels) format.
+        return [(l[0], Matrix([l[1:]]).t()) for l in data]
+
+    def test(net, test_data):
+        # test_data is a list with (digit, pixels) pairs.
+        correct = 0
+        for i, (digit, pixels) in enumerate(test_data):
+            if not i%1000:
+                print(i)
+            out = net.forward_pass(pixels)
+            guess = out.argmax()[0]
+            if guess == digit:
+                correct += 1
+
+        return correct/len(test_data)
+
+    def train(net, train_data):
+        ts = {}
+        for digit in range(10):
+            t = Matrix(0, 10, 1)
+            t.data[digit][0] = 1
+            ts[digit] = t
+
+        for i, (digit, pixels) in enumerate(train_data):
+            if not i % 1000:
+                print(i)
+            net.train(pixels, ts[digit])
+
+    test_data = load_data("mnistdata/mnist_test.csv")
+    print("Testing...")
+    print(test(net, test_data))
+
+    train_data = load_data("mnistdata/mnist_train.csv")
+    print("Training... ", end="")
+    train(net, train_data)
+    print("Done training.")
+
+    print("Testing...")
+    print(test(net, test_data))
