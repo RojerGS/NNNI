@@ -1,26 +1,30 @@
 # NNNI
-Neural Networks with No Imports (in Python)
 
-## Roadmap
+### Neural Networks with No Imports (in Python)
 
-Things that need to be done:
+As a proof of concept, this repository contains a *single*
+Python script with a full implementation of framework
+for artificial neural networks while making use of **no**
+imports whatsoever.
+This means that the implementation is done purely in
+vanilla Python, without even resorting to the standard
+library.
 
- - [x] activation function (Leaky ReLU)
- - [x] a class to represent a single layer
-   - [x] a class to represent matrices
-   - [x] operations on matrices
-     - [x] matrix multiplication
-     - [x] random matrix generation
-     - [x] matrix multiplication with scalars
-     - [x] component-wise maximum
-     - [x] matrix addition
-     - [x] matrix subtraction
-     - [x] component-wise exponentiation
-     - [x] transpose
-   - [x] forward pass
- - [x] loss function (MSE loss)
- - [x] a class to represent a network
-   - [x] forward pass
-   - [x] backpropagation algorithm
- - [ ] read the MNIST data
- - [ ] train the network
+Here are some of the things that had to be implemented
+by hand because no `import` were allowed:
+
+ - pseudo-random number generation;
+ - matrices and matrix algebra:
+   - matrix addition and subtraction
+   - matrix multiplication and division with scalars
+   - matrix comparison with scalars
+   - matrix transpose
+ - classes for abstract activation and loss functions
+ - Leaky ReLU activation function
+ - MSE loss function
+ - layer and neural network classes
+ - forward pass and backpropagation
+
+ > As of now, the code may have a bug that is preventing the
+ neural network from learning on the MNIST dataset.
+ To be sorted out soon, live on [mathspp.com/twitch](https://mathspp.com/twitch).
